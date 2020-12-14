@@ -1,12 +1,12 @@
 
-fn control_ferry(input: &str, init_x: i32, init_y: i32, f_mult: i32) -> usize {
-    let mut x: i32 = init_x;
-    let mut y: i32 = init_y;
+fn control_ferry(input: &str) -> usize {
+    let mut x: i32 = 0;
+    let mut y: i32 = 0;
     let mut dir = 'E';
 
     input.lines().for_each(|l|{
         let (cmd, dist) = parse_command(l);
-        let (new_dir, new_x, new_y) = run_command(cmd, dir, dist as i32, f_mult);
+        let (new_dir, new_x, new_y) = run_command(cmd, dir, dist);
         dir = new_dir;
         x += new_x;
         y += new_y;
@@ -16,17 +16,40 @@ fn control_ferry(input: &str, init_x: i32, init_y: i32, f_mult: i32) -> usize {
     sum as usize
 }
 
-fn parse_command(command: &str) -> (char, usize) {
+fn control_ferry_by_waypoint(input: &str, wp_init_x: i32, wp_init_y: i32) -> usize {
+    let mut x: i32 = 0;
+    let mut y: i32 = 0;
+    let mut wp_x: i32 = wp_init_x;
+    let mut wp_y: i32 = wp_init_y;    
+
+    input.lines().for_each(|l|{
+        let (cmd, dist) = parse_command(l);
+        if cmd != 'F' {
+            let (new_x, new_y) = run_waypoint_command(cmd, dist, wp_x, wp_y);            
+            wp_x = new_x;
+            wp_y = new_y;
+        } else if cmd == 'F' {
+            x += wp_x * dist;
+            y += wp_y * dist;
+        }
+        eprintln!("{} => wp {},{} : f {}, {}", l, wp_x, wp_y, x, y);        
+    });
+        
+    let sum = x.abs() + y.abs();
+    sum as usize
+}
+
+fn parse_command(command: &str) -> (char, i32) {
     (command.chars().nth(0).unwrap_or(' '), command[1..].parse().unwrap_or(0))
 }
 
-fn run_command(cmd: char, dir: char, dist: i32, f_mult: i32) -> (char, i32, i32) {
+fn run_command(cmd: char, dir: char, dist: i32) -> (char, i32, i32) {
     match cmd {
         'N' => (dir, 0, dist),
         'S' => (dir, 0, -dist),
         'E' => (dir, dist, 0),
         'W' => (dir, -dist, 0),
-        'F' => run_command(dir, dir, dist*f_mult, f_mult),
+        'F' => run_command(dir, dir, dist),
         'R'|'L' => (rotate(cmd, dir, dist), 0, 0),
         _ => (dir, 0, 0),
     }
@@ -52,35 +75,52 @@ fn rotate(cmd: char, dir: char, angle: i32) -> char {
     directions[new_index as usize]
 }
 
+fn run_waypoint_command(cmd: char, dist: i32, x: i32, y: i32) -> (i32, i32) {
+    match cmd {
+        'N' => (x, y+dist),
+        'S' => (x, y-dist),
+        'E' => (x+dist, y),
+        'W' => (x-dist, y),
+        'L' => rotate_coords(dist as f32, x, y),
+        'R' => rotate_coords(-dist as f32, x, y),
+        _ => (x, y),
+    }
+}
+
+fn rotate_coords(angle: f32, x: i32, y: i32) -> (i32, i32) {
+    let (s_a, c_a) = angle.to_radians().sin_cos();    
+    ((x as f32 * c_a) as i32 - (y as f32 * s_a) as i32, (x as f32 * s_a) as i32 + (y as f32 * c_a) as i32)
+}
+
 #[cfg(test)]
 mod tests {
-    use super::control_ferry;
+    use super::{control_ferry, control_ferry_by_waypoint};
 
     #[test]
     fn part1_example() {
         let input = include_str!("example_day12.txt");
-        let man_dist = control_ferry(input, 0, 0, 1);
-        eprintln!("Manhaten distance of ferry: {}", man_dist);
+        let man_dist = control_ferry(input);
+        eprintln!("Manhatten distance of ferry: {}", man_dist);
     }
 
     #[test]
     fn part1() {
         let input = include_str!("input_day12.txt");
-        let man_dist = control_ferry(input, 0, 0, 1);
-        eprintln!("Manhaten distance of ferry: {}", man_dist);
+        let man_dist = control_ferry(input);
+        eprintln!("Manhatten distance of ferry: {}", man_dist);
     }
 
     #[test]
     fn part2_example() {
         let input = include_str!("example_day12.txt");
-        let man_dist = control_ferry(input, 10, 1, 10);
-        eprintln!("Manhaten distance of ferry: {}", man_dist);
+        let man_dist = control_ferry_by_waypoint(input, 10, 1);
+        eprintln!("Manhatten distance of ferry: {}", man_dist);
     }
 
     #[test]
     fn part2() {
         let input = include_str!("input_day12.txt");
-        let man_dist = control_ferry(input,10, 1, 10);
-        eprintln!("Manhaten distance of ferry: {}", man_dist);
+        let man_dist = control_ferry_by_waypoint(input,10, 1);
+        eprintln!("Manhatten distance of ferry: {}", man_dist);
     }
 }
