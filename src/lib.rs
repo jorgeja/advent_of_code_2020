@@ -17,7 +17,7 @@ mod tests {
     use crate::day_4;
     #[test]
     fn day_1_test() {
-        let input_string = include_str!("input_day1.txt");
+        let input_string = include_str!("day_1/input_day1.txt");
         let input: Vec<i32> = input_string.lines().filter_map(|s| s.trim().parse().ok()).collect();
         if let Some(answer ) = day_1::find_answer_part1(&input) {
             eprintln!("Part1: {:?}", answer);
@@ -28,13 +28,13 @@ mod tests {
     }
     #[test]
     fn day_2_test() {
-        let input_str = include_str!("input_day2.txt");
+        let input_str = include_str!("day_2/input_day2.txt");
         day_2::solve(input_str);
         day_2::solve2(input_str);
     }
     #[test]
     fn day_3_test() {
-        let input_str = include_str!("input_day3.txt");
+        let input_str = include_str!("day_3/input_day3.txt");
         
         let slopes = vec![
             (1usize, 1usize),
@@ -68,7 +68,7 @@ mod tests {
     }
     #[test]
     fn day_4_test() {
-        let input_str = include_str!("input_day4.txt");
+        let input_str = include_str!("day_4/input_day4.txt");
         let passports = day_4::parse_passport(input_str);
         eprintln!("Part1: Num passports {}", passports.len());
 

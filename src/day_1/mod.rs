@@ -1,3 +1,5 @@
+
+
 #[derive(Debug)]
 pub struct Day1Answer {
     pub index_1: (usize, i32),
